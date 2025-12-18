@@ -1,0 +1,1716 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Duel Fight - Layar Utama</title>
+    
+     
+    
+    
+
+
+    <style>
+        /* [Gaya CSS tidak diubah dari versi sebelumnya] */
+        /* ==================================== */
+        /* GLOBAL CSS (Body & Container) */
+        /* ==================================== */
+        body {
+            background-color: #000;
+            color: #fff;
+            margin: 0;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            
+            /* --- PENCEGAHAN SALIN TEKS --- */
+            user-select: none; 
+            -webkit-user-select: none; 
+            -moz-user-select: none; 
+            -ms-user-select: none; 
+        }
+        
+        /* Mencegah highlight pada elemen yang bisa diklik (tombol) */
+        button, .control-btn, .menu-btn, .char-option {
+            -webkit-tap-highlight-color: transparent; 
+        }
+
+
+        #game-container, #initial-screen, #home-screen, #character-select-screen, #level-select-screen {
+            position: relative;
+            width: 100vw; 
+            height: 100vh;
+            background-color: #1a0a25; 
+            overflow: hidden;
+        }
+        
+        /* --- HOME SCREEN & INITIAL SCREEN SPECIFIC (Pusat Layar ke Atas) --- */
+        #home-screen, #initial-screen {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center; 
+            text-align: center;
+            z-index: 50;
+            /* PERUBAHAN: Geser ke atas 5% dari tinggi viewport */
+            transform: translateY(-5vh); 
+        }
+
+        /* --- Welcome Message Styling --- */
+        #welcome-message {
+            margin-top: 0;
+            margin-bottom: 10px; /* Jarak 10px ke judul di bawahnya */
+            opacity: 0; 
+            transition: opacity 0.5s ease-in-out; 
+            height: auto; 
+            color: #0f0;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        /* --- Game Title Styling --- */
+        #game-title {
+            font-size: 4em;
+            font-weight: bold;
+            color: #ff5500;
+            text-shadow: 0 0 15px rgba(255, 85, 0, 0.8);
+            
+            margin-top: 0;   
+            margin-bottom: 20px; /* Jarak 20px ke tombol menu di bawahnya */
+            
+            position: static; 
+            top: auto;
+        }
+        
+        #menu-buttons, #auth-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            width: 80%;
+            max-width: 300px;
+        }
+
+        .menu-btn {
+            padding: 15px 25px;
+            font-size: 1.2em;
+            cursor: pointer;
+            color: white;
+            border: none;
+            border-radius: 8px; 
+            box-shadow: 0 5px #cc4400; 
+            font-weight: bold;
+            transition: all 0.1s;
+        }
+        
+        /* Gaya Tombol Otentikasi */
+        .auth-btn {
+            background-color: #555;
+            box-shadow: 0 5px #333;
+        }
+        .auth-btn:active {
+            box-shadow: 0 1px #333;
+            transform: translateY(4px);
+        }
+
+        /* Gaya Tombol Start */
+        #start-btn {
+            background-color: #e6005c;
+            box-shadow: 0 5px #a30041;
+        }
+        #start-btn:active {
+            box-shadow: 0 1px #a30041;
+            transform: translateY(4px);
+        }
+
+        /* Tombol KARAKTER & LEVEL */
+        #character-btn, #level-btn, #logout-btn {
+            background-color: #ff5500;
+            box-shadow: 0 5px #cc4400;
+            padding: 15px 25px; 
+        }
+        
+        #character-btn:active, #level-btn:active, #logout-btn:active {
+            box-shadow: 0 1px #cc4400;
+            transform: translateY(4px);
+        }
+        
+        #logout-btn {
+            background-color: #333;
+            box-shadow: 0 5px #111;
+            margin-top: 25px; 
+            font-size: 1em;
+            padding: 10px 25px;
+        }
+
+        /* --- Currency Display (Disembunyikan) --- */
+        #currency-display, #select-currency-display {
+            display: none;
+        }
+
+
+        /* ==================================== */
+        /* SELECT SCREEN CSS BASE */
+        /* ==================================== */
+        #character-select-screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px 0; 
+            overflow-y: auto; 
+        }
+        
+        #level-select-screen {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 25vh; 
+        }
+        
+        #character-select-screen h2, #level-select-screen h2 {
+            color: #fff;
+            margin-bottom: 15px; 
+            font-size: 2em;
+        }
+        
+        #back-btn, #back-level-btn {
+            position: static; 
+            margin-top: 15px; 
+            padding: 10px 25px;
+            background-color: #ff5500;
+            box-shadow: 0 5px #cc4400;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1.1em;
+            transition: all 0.1s;
+        }
+        
+        #back-btn:active, #back-level-btn:active {
+            box-shadow: 0 1px #cc4400;
+            transform: translateY(4px); 
+        }
+
+        /* --- CHARACTER GRID --- */
+        #character-grid {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 8px; 
+            margin-bottom: 10px; 
+            flex-direction: column; 
+            width: 90%; 
+            max-width: 320px; 
+        }
+
+        .char-option {
+            background-color: #2a1a35;
+            padding: 10px; 
+            border-radius: 10px;
+            text-align: left; 
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: border 0.2s, background-color 0.2s, transform 0.1s, filter 0.1s; 
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            width: 300px; 
+            height: 45px; 
+            overflow: hidden; 
+            display: flex;
+            align-items: center;
+            gap: 10px; 
+            position: relative; 
+        }
+
+        /* LOGIKA AKTIF KARAKTER */
+        .char-option.locked {
+            background-color: #1a0a25;
+            filter: grayscale(100%);
+            cursor: pointer; 
+        }
+        
+        .char-option.locked:active {
+            filter: grayscale(100%);
+            background-color: #1a0a25;
+            transform: none; 
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5); 
+        }
+        
+        .char-option:not(.locked):active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5); 
+            background-color: #3a2a45; 
+            filter: brightness(1.2) drop-shadow(0 0 5px rgba(255, 255, 255, 0.5)); 
+        }
+        
+        .char-option.locked .char-info {
+            opacity: 0.5;
+        }
+        
+        .char-option.selected {
+            border: 3px solid #0f0; 
+            background-color: #3a2a45;
+            box-shadow: 0 0 15px rgba(0, 255, 0, 0.5);
+        }
+
+        .char-emoji {
+            font-size: 1.8em; 
+            display: block;
+            margin-bottom: 0px;
+            line-height: 1; 
+        }
+        
+        .char-info {
+            flex-grow: 1;
+        }
+
+        .char-name {
+            font-size: 0.9em; 
+            font-weight: bold;
+            color: #fff;
+            display: block;
+            margin-bottom: 2px; 
+        }
+        
+        .char-details {
+            font-size: 0.65em; 
+            color: #ccc;
+        }
+        
+        /* Label Terkunci */
+        .locked-label {
+            position: absolute;
+            right: 10px; 
+            top: 5px; 
+            padding: 0; 
+            background-color: transparent; 
+            color: #ff5500; 
+            font-size: 1.3em; 
+            font-weight: bold;
+            line-height: 1; 
+        }
+        
+        /* Style untuk level selection tetap sama */
+        #level-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 80%;
+            max-width: 350px;
+        }
+
+        .level-option {
+            background-color: #3a2a45;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: left;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: border 0.2s, background-color 0.2s;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+        }
+        
+        .level-option.selected {
+            border: 3px solid #ff5500;
+            background-color: #4a3a55;
+            box-shadow: 0 0 15px rgba(255, 85, 0, 0.7);
+        }
+        
+        .level-title {
+            font-size: 1.5em;
+            font-weight: bold;
+            color: #ffcc99;
+            margin-bottom: 5px;
+        }
+        
+        .level-details {
+            font-size: 0.9em;
+            color: #ccc;
+        }
+
+
+        /* ==================================== */
+        /* GAME SCREEN CSS */
+        /* ==================================== */
+        #game-container {
+            display: none; 
+        }
+        
+        .character {
+            position: absolute;
+            font-size: 4.5em; 
+            transition: top 0.1s; 
+            z-index: 2;
+        }
+
+        #player {
+            left: 5%; 
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        #enemy {
+            right: 5%; 
+            top: 50%;
+            transform: translateY(-50%);
+        }
+
+        /* ==================================== */
+        /* ANIMASI BARU (Peluru) */
+        /* ==================================== */
+        @keyframes rotate {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        
+        /* Terapkan animasi pada elemen peluru */
+        .bullet {
+            position: absolute;
+            font-size: 2.5em; 
+            z-index: 1;
+            /* Tambahkan properti animasi rotasi */
+            animation: rotate 1s linear infinite; /* Putar 1 detik penuh, linear, berulang */
+        }
+
+        .bullet.player-fire {
+            transform: none; 
+        }
+
+        .bullet.enemy-fire {
+            transform: none; 
+        }
+
+        /* --- Level Display --- */
+        #level-display {
+            position: absolute; 
+            top: 75px; 
+            left: 50%; 
+            transform: translateX(-50%); 
+            color: #fff; 
+            font-size: 1.2em;
+            font-weight: bold; 
+            z-index: 10;
+            background-color: rgba(0, 0, 0, 0.5); 
+            padding: 5px 10px;
+            border-radius: 5px;
+            border: 1px solid #ff5500;
+        }
+
+
+        /* --- Bar Kesehatan --- */
+        .health-container {
+            position: absolute;
+            top: 15px;
+            padding: 5px;
+            text-align: center;
+            z-index: 10;
+        }
+
+        .player-stats { left: 15px; }
+        .enemy-stats { right: 15px; }
+
+        .health-bar-bg {
+            width: 150px;
+            height: 15px;
+            background-color: #333;
+            border: 1px solid #fff;
+            margin: 5px 0;
+            border-radius: 3px;
+            overflow: hidden; 
+        }
+
+        .health-bar {
+            height: 100%;
+            width: 100%; 
+            transition: width 0.3s;
+            border-radius: 3px;
+        }
+
+        #player-health-bar { background-color: #0f0; } 
+        #enemy-health-bar { background-color: #f00; } 
+
+        /* --- Kontrol Tombol Bawah --- */
+        #controls {
+            position: absolute;
+            /* DIKEMBALIKAN KE PENGATURAN AWAL: 80px dari bawah */
+            bottom: 80px; 
+            width: 90%;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px; 
+            justify-content: space-around;
+            padding: 10px 0;
+            z-index: 10;
+        }
+
+        .control-btn {
+            padding: 20px 0; 
+            font-size: 1.5em;
+            cursor: pointer;
+            background-color: #ff5500;
+            color: white;
+            border: none;
+            border-radius: 8px; 
+            box-shadow: 0 5px #cc4400; 
+            flex-grow: 1;
+            transition: all 0.1s;
+            font-weight: bold;
+        }
+
+        .control-btn:active {
+            box-shadow: 0 1px #cc4400;
+            transform: translateY(4px); 
+        }
+        
+        .move-btn {
+            width: 30%; 
+            font-size: 2em;
+        }
+
+        #fire-btn {
+            width: 40%;
+            font-size: 1.2em;
+            background-color: #e6005c; 
+            box-shadow: 0 5px #a30041;
+        }
+
+        #fire-btn:active {
+            box-shadow: 0 1px #a30041;
+        }
+
+        /* --- Pesan Game Over/Menang --- */
+        #message-display {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, calc(-50% - 50px)); 
+            font-size: 2em; 
+            color: yellow;
+            background-color: rgba(0, 0, 0, 0.9);
+            padding: 30px;
+            border-radius: 15px;
+            z-index: 20;
+            visibility: hidden; 
+            pointer-events: none; 
+            opacity: 0; 
+            transition: opacity 0.3s;
+            
+            text-align: center;
+            border: 3px solid #ff5500;
+            box-shadow: 0 0 20px rgba(255, 85, 0, 0.7);
+            min-width: 250px;
+        }
+        
+        /* CLASS untuk menampilkan pesan */
+        #message-display.active {
+            visibility: visible;
+            pointer-events: auto; 
+            opacity: 1;
+        }
+
+        #message-display h2 {
+            margin: 0 0 15px 0;
+            font-size: 1.2em;
+        }
+
+        #action-buttons {
+            display: flex;
+            justify-content: space-around;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .action-btn {
+            padding: 10px 15px;
+            font-size: 0.8em;
+            font-weight: bold;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        #home-btn {
+            background-color: #555;
+            color: white;
+        }
+        #home-btn:hover { background-color: #777; }
+
+        #restart-btn {
+            background-color: #0f0;
+            color: black;
+        }
+        #restart-btn:hover { background-color: #3f3; }
+        
+        /* ==================================== */
+        /* CUSTOM MODAL FOR SECRET CODE & AUTH */
+        /* ==================================== */
+        #modal-secret-code, #auth-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: none; 
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            transition: opacity 0.3s;
+            opacity: 0;
+        }
+
+        #modal-secret-code.active, #auth-modal.active {
+            display: flex;
+            opacity: 1;
+        }
+
+        .modal-content {
+            background-color: #2a1a35;
+            padding: 25px;
+            border-radius: 10px;
+            text-align: center;
+            max-width: 300px;
+            width: 80%;
+            border: 3px solid #e6005c;
+            box-shadow: 0 0 20px rgba(230, 0, 92, 0.8);
+            position: relative; 
+        }
+
+        .modal-content h3 {
+            margin-top: 0;
+            color: #ff5500;
+            font-size: 1.5em;
+        }
+
+        .modal-content input[type="text"],
+        .modal-content input[type="password"] {
+            width: 80%;
+            padding: 10px;
+            margin: 10px auto 10px auto; 
+            border: 2px solid #555;
+            border-radius: 5px;
+            font-size: 1.1em;
+            text-align: center;
+            background-color: #1a0a25;
+            color: white;
+            outline: none;
+            display: block; 
+        }
+        
+        /* Margin khusus untuk tombol submit/cancel */
+        #modal-buttons, #auth-modal-buttons {
+            display: flex;
+            justify-content: center; 
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .modal-content button {
+            padding: 10px 20px;
+            font-weight: bold;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #submit-code-btn, #auth-submit-btn {
+            background-color: #0f0;
+            color: black;
+        }
+        
+        #cancel-code-btn, #auth-cancel-btn {
+            background-color: #ff5500;
+            color: white;
+        }
+
+        /* --- STYLING PESAN ERROR BARU --- */
+        .error-text {
+            color: #ff0000;
+            font-weight: bold;
+            font-size: 1em;
+            visibility: hidden; 
+            height: 0;
+            margin: 0;
+            transition: visibility 0s, height 0.3s;
+        }
+        
+        .error-text.show {
+            visibility: visible;
+            height: auto;
+            margin-bottom: 10px;
+        }
+    </style>
+
+<!-- 🔥 FIREBASE v8 (NON-MODULE, BISA DIBUKA LANGSUNG DI CHROME / ZARCHIVER) -->
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+<script>
+  var firebaseConfig = {
+    apiKey: "AIzaSyD7cgA7x4zvBNxmRBPxViwo2O-HscKwE0E",
+    authDomain: "duel-fight-html.firebaseapp.com",
+    databaseURL: "https://duel-fight-html-default-rtdb.asia-southeast1.firebasedatabase.app",
+    projectId: "duel-fight-html",
+    storageBucket: "duel-fight-html.firebasestorage.app",
+    messagingSenderId: "366579358592",
+    appId: "1:366579358592:web:6d3ee67fc001fc5b8dbf65"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  var database = firebase.database();
+</script>
+
+</head>
+<body>
+
+    <div id="initial-screen">
+        <div id="game-title">DUEL FIGHT</div>
+        
+        <div id="auth-buttons">
+            <button id="show-login-btn" class="menu-btn auth-btn">LOGIN</button>
+            <button id="show-register-btn" class="menu-btn auth-btn">DAFTAR</button>
+        </div>
+
+        <div id="credits" style="margin-top: 50px; font-size: 0.9em; color: #888;">
+            Game ini dibuat oleh : gemini x chatgpt x rg
+        </div>
+    </div>
+    
+    <div id="home-screen">
+        <p id="welcome-message">Selamat Datang, <span id="welcome-user">Pemain</span>!</p>
+        <div id="game-title">DUEL FIGHT</div>
+        
+        <div id="menu-buttons">
+            <button id="start-btn" class="menu-btn">MULAI SEKARANG</button>
+            <button id="character-btn" class="menu-btn">KARAKTER 🥷</button> 
+            <button id="level-btn" class="menu-btn">LEVEL 🧌</button> 
+        </div>
+        
+        <button id="logout-btn" class="menu-btn">KELUAR</button>
+
+    </div>
+    
+    <div id="character-select-screen">
+        <h2>Pilih Karakter Kamu</h2> 
+        <div id="select-currency-display"></div> 
+        <div id="character-grid">
+            </div>
+        <button id="back-btn">← KEMBALI</button>
+    </div>
+
+    <div id="level-select-screen">
+        <h2>Pilih Tingkat Kesulitan</h2>
+        <div id="level-grid">
+            </div>
+        <button id="back-level-btn">← KEMBALI</button>
+    </div>
+
+    <div id="game-container">
+        <div class="health-container player-stats">
+            <span class="label">PEMAIN 🥷</span> 
+            <div class="health-bar-bg">
+                <div id="player-health-bar" class="health-bar"></div>
+            </div>
+            <span id="player-hp-text">100 HP</span>
+        </div>
+        
+        <div id="level-display">LEVEL 1: 🧌</div>
+
+        <div class="health-container enemy-stats">
+            <span class="label">LAWAN 🧌</span>
+            <div class="health-bar-bg">
+                <div id="enemy-health-bar" class="health-bar"></div>
+            </div>
+            <span id="enemy-hp-text">100 HP</span>
+        </div>
+
+        <div id="player" class="character">🥷</div>
+        <div id="enemy" class="character">🧛🏻</div>
+
+        <div id="message-display">
+            </div>
+
+        <div id="controls">
+            <button id="up-btn" class="control-btn move-btn">&#9650;</button> 
+            <button id="down-btn" class="control-btn move-btn">&#9660;</button> 
+            <button id="fire-btn" class="control-btn">TEMBAK</button> 
+        </div>
+    </div>
+    
+    <div id="modal-secret-code">
+        <div class="modal-content">
+            <h3 id="modal-title">Karakter Pangeran Mahkota terkunci.</h3>
+            
+            <p id="error-message" class="error-text">Kode yang dimasukan salah!</p>
+
+            <p id="modal-input-label">Masukan kode untuk membukanya:</p>
+            <input type="text" id="secret-code-input" maxlength="8" placeholder="********">
+            <div id="modal-buttons">
+                <button id="submit-code-btn">MASUKKAN</button>
+                <button id="cancel-code-btn">BATAL</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="auth-modal">
+        <div class="modal-content">
+            <h3 id="auth-modal-title">LOGIN</h3>
+            
+            <p id="auth-error-message" class="error-text">Nama pengguna atau kata sandi salah!</p>
+
+            <input type="text" id="auth-username-input" placeholder="Nama Pengguna" maxlength="15">
+            <input type="password" id="auth-password-input" placeholder="Kata Sandi" maxlength="15">
+            
+            <div id="auth-modal-buttons">
+                <button id="auth-submit-btn">MASUK</button>
+                <button id="auth-cancel-btn">BATAL</button>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Variabel Konstanta & Elemen UI (Tidak Berubah) ---
+            const initialScreen = document.getElementById('initial-screen'); 
+            const homeScreen = document.getElementById('home-screen'); 
+            const welcomeUserEl = document.getElementById('welcome-user'); 
+            const welcomeMessageEl = document.getElementById('welcome-message'); 
+            const startBtn = document.getElementById('start-btn');
+            const characterBtn = document.getElementById('character-btn');
+            const levelBtn = document.getElementById('level-btn'); 
+            const logoutBtn = document.getElementById('logout-btn'); 
+            const showLoginBtn = document.getElementById('show-login-btn');
+            const showRegisterBtn = document.getElementById('show-register-btn');
+            const authModal = document.getElementById('auth-modal');
+            const authModalTitle = document.getElementById('auth-modal-title');
+            const authUsernameInput = document.getElementById('auth-username-input');
+            const authPasswordInput = document.getElementById('auth-password-input');
+            const authSubmitBtn = document.getElementById('auth-submit-btn');
+            const authCancelBtn = document.getElementById('auth-cancel-btn');
+            const authErrorMessageEl = document.getElementById('auth-error-message');
+            let authMode = 'login'; 
+            const modalSecretCode = document.getElementById('modal-secret-code');
+            const secretCodeInput = document.getElementById('secret-code-input');
+            const submitCodeBtn = document.getElementById('submit-code-btn');
+            const cancelCodeBtn = document.getElementById('cancel-code-btn');
+            const modalTitle = document.getElementById('modal-title');
+            const errorMessageEl = document.getElementById('error-message'); 
+            const modalButtons = document.getElementById('modal-buttons'); 
+            const modalInputLabel = document.getElementById('modal-input-label'); 
+            const characterSelectScreen = document.getElementById('character-select-screen');
+            const characterGrid = document.getElementById('character-grid');
+            const backBtn = document.getElementById('back-btn'); 
+            const levelSelectScreen = document.getElementById('level-select-screen'); 
+            const levelGrid = document.getElementById('level-grid'); 
+            const backLevelBtn = document.getElementById('back-level-btn'); 
+            const gameContainer = document.getElementById('game-container');
+            const playerEl = document.getElementById('player');
+            const enemyEl = document.getElementById('enemy');
+            const msgDisplay = document.getElementById('message-display');
+            const upBtn = document.getElementById('up-btn');
+            const downBtn = document.getElementById('down-btn');
+            const fireBtn = document.getElementById('fire-btn');
+            const playerHealthBar = document.getElementById('player-health-bar');
+            const enemyHealthBar = document.getElementById('enemy-health-bar');
+            const playerHpText = document.getElementById('player-hp-text');
+            const enemyHpText = document.getElementById('enemy-hp-text');
+            const levelDisplayEl = document.getElementById('level-display');
+
+            // --- KODE RAHASIA DIPERBARUI ---
+            const SECRET_CODE_NORMAL = '201015'; // Kode lama untuk statistik normal
+            const SECRET_CODE_OWNER = '15122010';   // KODE BARU untuk statistik owner/premium
+            let charIdToUnlock = null;
+
+            // --- VARIABEL GLOBAL BARU ---
+            let CURRENT_USER = null; 
+
+            // --- VARIABEL GAME & KARAKTER ---
+            
+            // Defenisi Karakter Pemain (dengan emoji peluru)
+            let CHARACTER_LIST = {
+                'ninja': { 
+                    name: 'Ninja', emoji: '🥷', 
+                    baseHP: 100, damage: 20, fireRate: 500, speed: 30, isLocked: false,
+                    bulletEmoji: '🗡️' 
+                },
+                'womanVillain': { 
+                    name: 'Wanita Jahat', emoji: '🦹🏻‍♀️', 
+                    baseHP: 110, damage: 25, fireRate: 700, speed: 20, isLocked: false,
+                    bulletEmoji: '💜' 
+                },
+                'womanHero': { 
+                    name: 'Wanita Pahlawan Super', emoji: '🦸‍♀️', 
+                    baseHP: 120, damage: 15, fireRate: 600, speed: 25, isLocked: false,
+                    bulletEmoji: '⭐' 
+                },
+                'manVillain': { 
+                    name: 'Pria Jahat', emoji: '🦹🏻‍♂️', 
+                    baseHP: 90, damage: 35, fireRate: 450, speed: 25, isLocked: false,
+                    bulletEmoji: '💣' 
+                },
+                'manHero': { 
+                    name: 'Pria Pahlawan Super', emoji: '🦸🏻‍♂️', 
+                    baseHP: 80, damage: 30, fireRate: 400, speed: 35, isLocked: false,
+                    bulletEmoji: '⚡' 
+                },
+                'princess': { 
+                    name: 'Putri Mahkota', emoji: '👸', 
+                    isLocked: true, bulletEmoji: '💖',
+                    // STATISTIK NORMAL (Data lama)
+                    statsNormal: { baseHP: 140, damage: 45, fireRate: 100, speed: 45 },
+                    // STATISTIK OWNER BARU (Data dari user: HP 15000, DMG 15000, Fire Rate 50, Speed 50)
+                    statsOwner: { baseHP: 15000, damage: 15000, fireRate: 50, speed: 50 } 
+                },
+                'prince': { 
+                    name: 'Pangeran Mahkota', emoji: '🤴🏻', 
+                    isLocked: true, bulletEmoji: '👑',
+                    // STATISTIK NORMAL (Data lama)
+                    statsNormal: { baseHP: 150, damage: 55, fireRate: 50, speed: 55 },
+                    // STATISTIK OWNER BARU (Data dari user: HP 15000, DMG 15000, Fire Rate 50, Speed 50)
+                    statsOwner: { baseHP: 15000, damage: 15000, fireRate: 50, speed: 50 } 
+                }
+            };
+            
+            // --- DEFENISI LEVEL (dengan emoji peluru musuh) ---
+            const LEVEL_CONFIG = {
+                1: {
+                    name: 'Goblin', emoji: '🧌', 
+                    enemyHP: 100, enemyDamage: 20, enemyFireRate: 1500, enemySpeed: 2,
+                    bulletEmoji: '🪨' // Peluru untuk Goblin (Batu)
+                },
+                2: {
+                    name: 'Zombie', emoji: '🧟', 
+                    enemyHP: 130, enemyDamage: 25, enemyFireRate: 1100, enemySpeed: 3,
+                    bulletEmoji: '💀' // Peluru untuk Zombie (Tengkorak)
+                },
+                3: {
+                    name: 'Vampir', emoji: '🧛🏻', 
+                    enemyHP: 160, enemyDamage: 30, enemyFireRate: 800, enemySpeed: 4,
+                    bulletEmoji: '🦇' // Peluru untuk Vampir (Kelelawar)
+                }
+            };
+            // =================================================================
+
+            let CURRENT_PLAYER_CHAR = 'ninja'; 
+            let playerHP; 
+            let CURRENT_LEVEL = 1; 
+            let enemyHP; 
+            let gameActive = false;
+            let enemyAIInterval; 
+            let canFire = true;
+            let playerY; 
+            let enemyY;
+            let activeBullets = []; 
+            let gameLoopId; 
+
+            
+            // ==============================================================
+            // === FUNGSI UTILITIES BARU: GET STATISTIK YANG TEPAT ===
+            // (Digunakan untuk Gameplay: Pastikan Owner mendapatkan stat tinggi)
+            // ==============================================================
+            function getCharacterStats(charId) {
+                const charData = CHARACTER_LIST[charId];
+                
+                // Untuk karakter standar (tidak ada statsNormal), kembalikan data utama
+                if (!charData.statsNormal) {
+                    return charData;
+                }
+
+                // Untuk karakter premium, periksa mode statistik yang tersimpan
+                const mode = charData.statMode || 'normal'; 
+                
+                // Jika mode adalah 'owner', kembalikan statsOwner (STATISTIK TERSEMBUNYI)
+                if (mode === 'owner') {
+                    return charData.statsOwner;
+                } else {
+                    return charData.statsNormal;
+                }
+            }
+            
+            function getCharacterDisplayName(charData) {
+                 // Hanya tampilkan label OWNER di tombol dan layar seleksi jika mode owner aktif
+                 if (charData.statsNormal && charData.statMode === 'owner') {
+                     return `${charData.name} (OWNER)`;
+                 }
+                 return charData.name;
+            }
+            
+            // ==============================================================
+            // === FUNGSI FIREBASE (PENGGANTI LOCAL STORAGE) - ASYNC/AWAIT ===
+            // ==============================================================
+            
+            async function getUserCredentials(username) {
+                const safeUsername = encodeURIComponent(username);
+                const snapshot = await database.ref('users/' + safeUsername).once('value');
+                return snapshot.val(); 
+            }
+
+            async function saveUserCredentials(username, password) {
+                const safeUsername = encodeURIComponent(username);
+                await database.ref('users/' + safeUsername).set({
+                    password: password
+                });
+            }
+
+            function saveGameData() {
+                if (!CURRENT_USER) return;
+                const safeUsername = encodeURIComponent(CURRENT_USER);
+                
+                const lockedStatus = {};
+                const statModes = {}; 
+                
+                Object.keys(CHARACTER_LIST).forEach(charId => {
+                    lockedStatus[charId] = CHARACTER_LIST[charId].isLocked;
+                    if (CHARACTER_LIST[charId].statsNormal) {
+                         statModes[charId] = CHARACTER_LIST[charId].statMode || 'normal'; 
+                    }
+                });
+
+                const dataToSave = {
+                    playerChar: CURRENT_PLAYER_CHAR,
+                    locked: lockedStatus,
+                    statModes: statModes, 
+                    level: CURRENT_LEVEL 
+                };
+
+                database.ref('users/' + safeUsername + '/gameData').set(dataToSave)
+                    .catch(error => console.error("Gagal menyimpan data ke Firebase:", error));
+            }
+
+
+            async function loadGameData() {
+                if (!CURRENT_USER) return;
+                const safeUsername = encodeURIComponent(CURRENT_USER);
+                
+                resetCharacterLockStatus(); 
+                
+                try {
+                    const snapshot = await database.ref('users/' + safeUsername + '/gameData').once('value');
+                    const data = snapshot.val();
+
+                    if (data) {
+                        if (LEVEL_CONFIG[data.level]) {
+                            CURRENT_LEVEL = data.level;
+                        }
+
+                        if (data.locked) {
+                            Object.keys(data.locked).forEach(charId => {
+                                if (CHARACTER_LIST[charId] && data.locked[charId] === false) { 
+                                     CHARACTER_LIST[charId].isLocked = false;
+                                }
+                            });
+                        }
+                        
+                        if (data.statModes) {
+                             Object.keys(data.statModes).forEach(charId => {
+                                if (CHARACTER_LIST[charId] && CHARACTER_LIST[charId].statsNormal) {
+                                    CHARACTER_LIST[charId].statMode = data.statModes[charId];
+                                }
+                             });
+                        }
+                        
+                        if (CHARACTER_LIST[data.playerChar] && !CHARACTER_LIST[data.playerChar].isLocked) {
+                            CURRENT_PLAYER_CHAR = data.playerChar;
+                        } else {
+                            CURRENT_PLAYER_CHAR = 'ninja'; 
+                        }
+                    } else {
+                        CURRENT_PLAYER_CHAR = 'ninja';
+                        CURRENT_LEVEL = 1;
+                        saveGameData(); 
+                    }
+                } catch (e) {
+                    console.error("Gagal memuat data dari Firebase:", e);
+                    resetCharacterLockStatus();
+                    CURRENT_PLAYER_CHAR = 'ninja';
+                    CURRENT_LEVEL = 1;
+                }
+                
+                const playerStats = getCharacterStats(CURRENT_PLAYER_CHAR);
+                playerHP = playerStats.baseHP; 
+                enemyHP = LEVEL_CONFIG[CURRENT_LEVEL].enemyHP;
+            }
+
+            function resetCharacterLockStatus() {
+                 Object.keys(CHARACTER_LIST).forEach(charId => {
+                     if (charId === 'ninja' || charId === 'womanVillain' || charId === 'womanHero' || charId === 'manVillain' || charId === 'manHero') {
+                         CHARACTER_LIST[charId].isLocked = false;
+                     } else {
+                         CHARACTER_LIST[charId].isLocked = true; 
+                     }
+                     if (CHARACTER_LIST[charId].statsNormal) {
+                         CHARACTER_LIST[charId].statMode = 'normal';
+                     }
+                 });
+            }
+            // ==============================================================
+
+
+            // --- FUNGSI NAVIGASI & UPDATE TOMBOL (Tidak Berubah) ---
+            function showScreen(screenId, showWelcome = false) {
+                // ... (Logika Sembunyikan semua layar) ...
+                initialScreen.style.display = 'none'; 
+                homeScreen.style.display = 'none';
+                gameContainer.style.display = 'none';
+                characterSelectScreen.style.display = 'none'; 
+                levelSelectScreen.style.display = 'none';
+                msgDisplay.classList.remove('active'); 
+                modalSecretCode.classList.remove('active');
+                authModal.classList.remove('active'); 
+                welcomeMessageEl.style.opacity = 0; 
+
+                if (screenId !== 'game') {
+                    gameActive = false;
+                    if (enemyAIInterval) clearInterval(enemyAIInterval);
+                    if (gameLoopId) cancelAnimationFrame(gameLoopId); 
+                    document.querySelectorAll('.bullet').forEach(bullet => bullet.remove());
+                    activeBullets = []; 
+                }
+
+                if (screenId === 'initial') { 
+                    CURRENT_USER = null;
+                    initialScreen.style.display = 'flex';
+                } else if (screenId === 'home') {
+                    if (!CURRENT_USER) { 
+                        showScreen('initial');
+                        return;
+                    }
+                    homeScreen.style.display = 'flex';
+                    welcomeUserEl.textContent = CURRENT_USER; 
+                    
+                    loadGameData().then(() => {
+                        updateHealthDisplay();
+                        updateLevelButton(); 
+                        updateCharacterButton();
+                    }).catch(e => {
+                         console.error("Error loading data:", e);
+                    });
+
+                    if (showWelcome) {
+                        welcomeMessageEl.style.opacity = 1; 
+                        setTimeout(() => {
+                            welcomeMessageEl.style.opacity = 0; 
+                        }, 3000); 
+                    }
+                } else if (screenId === 'character') {
+                    characterSelectScreen.style.display = 'flex';
+                    renderCharacterSelection();
+                } else if (screenId === 'level') { 
+                    levelSelectScreen.style.display = 'flex';
+                    renderLevelSelection();
+                } else if (screenId === 'game') {
+                    playerEl.textContent = CHARACTER_LIST[CURRENT_PLAYER_CHAR].emoji;
+                    document.querySelector('.player-stats .label').textContent = `PEMAIN ${CHARACTER_LIST[CURRENT_PLAYER_CHAR].emoji}`;
+
+                    gameContainer.style.display = 'block';
+                    resetGame(true); 
+                }
+            }
+            
+            function updateLevelButton() {
+                const config = LEVEL_CONFIG[CURRENT_LEVEL];
+                levelBtn.textContent = `LEVEL ${CURRENT_LEVEL} ${config.emoji}`;
+            }
+            
+            // --- FUNGSI UTAMA YANG DIPERBAIKI ---
+            function updateCharacterButton() {
+                const charData = CHARACTER_LIST[CURRENT_PLAYER_CHAR];
+                // Hapus penggunaan displayName, kembalikan hanya KARAKTER + Emoji
+                characterBtn.textContent = `KARAKTER ${charData.emoji}`;
+            }
+
+
+            // --- LOGIKA OTENTIKASI (Tidak Berubah) ---
+            function showAuthModal(mode) {
+                authMode = mode;
+                authUsernameInput.value = '';
+                authPasswordInput.value = '';
+                authErrorMessageEl.classList.remove('show');
+                authModalTitle.textContent = (mode === 'login' ? 'LOGIN AKUN' : 'DAFTAR AKUN BARU');
+                authSubmitBtn.textContent = (mode === 'login' ? 'MASUK' : 'BUAT AKUN');
+                authModal.classList.add('active');
+            }
+            
+            showLoginBtn.addEventListener('click', () => showAuthModal('login'));
+            showRegisterBtn.addEventListener('click', () => showAuthModal('register'));
+            authCancelBtn.addEventListener('click', () => authModal.classList.remove('active'));
+
+            authSubmitBtn.addEventListener('click', async () => {
+                const username = authUsernameInput.value.trim();
+                const password = authPasswordInput.value.trim();
+
+                authErrorMessageEl.classList.remove('show');
+
+                if (username.length < 3 || password.length < 3) {
+                    authErrorMessageEl.textContent = 'Nama pengguna & Kata sandi minimal 3 karakter.';
+                    authErrorMessageEl.classList.add('show');
+                    return;
+                }
+                
+                if (authMode === 'register') {
+                    const existingUser = await getUserCredentials(username);
+                    
+                    if (existingUser) {
+                        authErrorMessageEl.textContent = 'Nama pengguna sudah terdaftar!';
+                        authErrorMessageEl.classList.add('show');
+                    } else {
+                        await saveUserCredentials(username, password); 
+                        CURRENT_USER = username;
+                        
+                        authModalTitle.textContent = 'Pendaftaran Berhasil! Masuk ke Game...';
+                        authModalTitle.style.color = '#0f0';
+                        authUsernameInput.style.display = 'none';
+                        authPasswordInput.style.display = 'none';
+                        authSubmitBtn.style.display = 'none';
+                        authCancelBtn.style.display = 'none';
+                        
+                        setTimeout(() => { 
+                            authModal.classList.remove('active');
+                            authModalTitle.style.color = '#ff5500'; 
+                            authUsernameInput.style.display = 'block';
+                            authPasswordInput.style.display = 'block';
+                            authSubmitBtn.style.display = 'block';
+                            authCancelBtn.style.display = 'block';
+                            showScreen('home', true); 
+                        }, 3000); 
+                    }
+                } else if (authMode === 'login') {
+                    const user = await getUserCredentials(username);
+                    
+                    if (user && user.password === password) {
+                        CURRENT_USER = username;
+                        authModal.classList.remove('active');
+                        showScreen('home', true); 
+                    } else {
+                        authErrorMessageEl.textContent = 'Nama pengguna atau kata sandi salah!';
+                        authErrorMessageEl.classList.add('show');
+                    }
+                }
+            });
+            
+            logoutBtn.addEventListener('click', () => {
+                CURRENT_USER = null;
+                showScreen('initial'); 
+            });
+
+
+            // =================================================================
+            // --- FUNGSI PEMILIHAN KARAKTER (FIX STATISTIK PREMIUM) ---
+            // =================================================================
+            function renderCharacterSelection() {
+                characterGrid.innerHTML = ''; 
+                Object.keys(CHARACTER_LIST).forEach(charId => {
+                    const charData = CHARACTER_LIST[charId];
+                    const option = document.createElement('div');
+                    option.classList.add('char-option');
+                    option.setAttribute('data-char-id', charId);
+                    
+                    // --- LOGIKA PERBAIKAN: Menentukan displayStats berdasarkan status kunci ---
+                    let displayStats;
+            
+                    if (charData.isLocked) {
+                        // Jika terkunci, SELALU tampilkan Statistik Normal (atau base stats jika bukan premium)
+                        displayStats = charData.statsNormal || charData; 
+                    } else {
+                        // Jika sudah TERBUKA, gunakan getCharacterStats() untuk mendapatkan statistik yang sesuai (Normal/Owner)
+                        displayStats = getCharacterStats(charId); 
+                    }
+                    // ------------------------------------------------------------------------
+                    
+                    // Gunakan fungsi untuk mendapatkan nama (termasuk label OWNER jika aktif)
+                    const displayName = getCharacterDisplayName(charData); 
+                    
+                    // 1. Buat teks detail menggunakan stats yang dipilih di atas
+                    let charDetailsText = `HP: ${displayStats.baseHP} | DMG: ${displayStats.damage} | Fire Rate: ${displayStats.fireRate/1000}s | Speed: ${displayStats.speed}`;
+                    
+                    let lockLabel = '';
+
+                    if (charData.isLocked) {
+                        option.classList.add('locked');
+                        // 2. Jika terkunci, tambahkan label 'TERKUNCI' 
+                        charDetailsText += ' (TERKUNCI)'; 
+                        lockLabel = `<span class="locked-label">🔒</span>`;
+                    }
+                    
+                    if (charId === CURRENT_PLAYER_CHAR) {
+                        option.classList.add('selected');
+                    }
+                    
+                    option.innerHTML = `
+                        <span class="char-emoji">${charData.emoji}</span>
+                        <div class="char-info">
+                            <span class="char-name">${displayName}</span>
+                            <span class="char-details">${charDetailsText}</span>
+                        </div>
+                        ${lockLabel}
+                    `;
+                    
+                    option.addEventListener('click', () => {
+                        if (charData.isLocked) {
+                            promptSecretCode(charId, charData.name);
+                        } else {
+                            selectCharacter(charId);
+                        }
+                    });
+                    
+                    characterGrid.appendChild(option);
+                });
+            }
+            // =================================================================
+
+
+            // --- FUNGSI MODAL KODE RAHASIA (Tidak Berubah) ---
+            function promptSecretCode(charId, charName) {
+                errorMessageEl.classList.remove('show');
+                charIdToUnlock = charId; 
+                modalTitle.textContent = `Karakter ${charName} terkunci.`;
+                modalTitle.style.color = '#ff5500'; 
+                secretCodeInput.style.display = 'block'; 
+                modalButtons.style.display = 'flex'; 
+                modalInputLabel.style.display = 'block';
+                secretCodeInput.value = ''; 
+                secretCodeInput.setAttribute('maxlength', '8');
+                secretCodeInput.setAttribute('placeholder', '********');
+                modalSecretCode.classList.add('active');
+            }
+            
+            submitCodeBtn.addEventListener('click', () => {
+                const enteredCode = secretCodeInput.value.trim();
+                const charData = CHARACTER_LIST[charIdToUnlock];
+                const charName = charData ? charData.name : 'Karakter';
+
+                let isCodeValid = false;
+                let statModeToUnlock = '';
+
+                if (enteredCode === SECRET_CODE_NORMAL) { 
+                    isCodeValid = true;
+                    statModeToUnlock = 'normal';
+                } 
+                else if (enteredCode === SECRET_CODE_OWNER) { 
+                    isCodeValid = true;
+                    statModeToUnlock = 'owner';
+                }
+
+                if (isCodeValid) {
+                    CHARACTER_LIST[charIdToUnlock].isLocked = false;
+                    
+                    if (charData.statsNormal) {
+                        CHARACTER_LIST[charIdToUnlock].statMode = statModeToUnlock; 
+                    }
+                    
+                    saveGameData(); 
+                    
+                    CURRENT_PLAYER_CHAR = charIdToUnlock;
+
+                    secretCodeInput.style.display = 'none'; 
+                    modalButtons.style.display = 'none'; 
+                    modalInputLabel.style.display = 'none';
+                    errorMessageEl.classList.remove('show'); 
+                    
+                    modalTitle.innerHTML = `Selamat! Karakter ${charName} berhasil di buka!`; 
+                    modalTitle.style.color = '#0f0'; 
+
+                    setTimeout(() => {
+                        modalSecretCode.classList.remove('active'); 
+                        renderCharacterSelection(); 
+                        updateCharacterButton(); 
+                    }, 3000);
+                    
+                } else {
+                    errorMessageEl.classList.add('show');
+                    secretCodeInput.value = ''; 
+                    setTimeout(() => {
+                        errorMessageEl.classList.remove('show');
+                    }, 2000);
+                }
+            });
+
+            cancelCodeBtn.addEventListener('click', () => {
+                modalSecretCode.classList.remove('active');
+            });
+            
+            function selectCharacter(charId) {
+                const charData = CHARACTER_LIST[charId];
+                if (charData.isLocked) return; 
+
+                CURRENT_PLAYER_CHAR = charId;
+                
+                const playerStats = getCharacterStats(charId);
+                playerHP = playerStats.baseHP; 
+
+                document.querySelectorAll('.char-option').forEach(opt => {
+                    opt.classList.remove('selected');
+                    if (opt.getAttribute('data-char-id') === charId) {
+                        opt.classList.add('selected');
+                    }
+                });
+                
+                updateCharacterButton(); 
+                saveGameData(); 
+            }
+
+            // --- FUNGSI PEMILIHAN LEVEL (Tidak Berubah) ---
+            function renderLevelSelection() {
+                levelGrid.innerHTML = '';
+                for (const levelId in LEVEL_CONFIG) {
+                    const config = LEVEL_CONFIG[levelId];
+                    const option = document.createElement('div');
+                    option.classList.add('level-option');
+                    option.setAttribute('data-level-id', levelId);
+                    
+                    if (parseInt(levelId) === CURRENT_LEVEL) {
+                        option.classList.add('selected');
+                    }
+                    
+                    let levelDetailsText = `HP: ${config.enemyHP} | DMG: ${config.enemyDamage} | Fire Rate: ${config.enemyFireRate/1000}s | Speed: ${config.enemySpeed}`;
+
+                    option.innerHTML = `
+                        <div class="level-title">LEVEL ${levelId}: ${config.emoji} ${config.name}</div>
+                        <div class="level-details">
+                            ${levelDetailsText}
+                        </div>
+                    `;
+                    option.addEventListener('click', () => selectLevel(parseInt(levelId)));
+                    levelGrid.appendChild(option);
+                }
+            }
+            
+            function selectLevel(levelId) {
+                CURRENT_LEVEL = levelId;
+                document.querySelectorAll('.level-option').forEach(opt => {
+                    opt.classList.remove('selected');
+                    if (parseInt(opt.getAttribute('data-level-id')) === levelId) {
+                        opt.classList.add('selected');
+                    }
+                });
+                updateLevelButton(); 
+                saveGameData(); 
+            }
+
+            // --- EVENT LISTENER MENU & KEMBALI (Tidak Berubah) ---
+            startBtn.addEventListener('click', () => showScreen('game'));
+            characterBtn.addEventListener('click', () => showScreen('character')); 
+            levelBtn.addEventListener('click', () => showScreen('level')); 
+            backBtn.addEventListener('click', () => showScreen('home')); 
+            backLevelBtn.addEventListener('click', () => showScreen('home')); 
+
+            // --- FUNGSI GAME CORE (Menggunakan getCharacterStats yang BENAR) ---
+            function resetGame(isFullReset = true) {
+                const levelConfig = LEVEL_CONFIG[CURRENT_LEVEL];
+                // Menggunakan fungsi getCharacterStats (akan mengambil stat Owner jika aktif)
+                const playerConfig = getCharacterStats(CURRENT_PLAYER_CHAR); 
+
+                if (isFullReset) {
+                    playerHP = playerConfig.baseHP; 
+                    enemyHP = levelConfig.enemyHP;
+                }
+                gameActive = true;
+                canFire = true;
+                
+                enemyEl.textContent = levelConfig.emoji;
+                document.querySelector('.enemy-stats .label').textContent = `LAWAN ${levelConfig.emoji}`;
+                levelDisplayEl.textContent = `LEVEL ${CURRENT_LEVEL}: ${levelConfig.emoji}`;
+                
+                const containerHeight = gameContainer.clientHeight;
+                const playerHeight = playerEl.clientHeight;
+                const initialY = (containerHeight / 2) - (playerHeight / 2);
+                
+                playerY = initialY;
+                enemyY = initialY;
+                playerEl.style.top = `${playerY}px`;
+                enemyEl.style.top = `${enemyY}px`;
+
+                document.querySelectorAll('.bullet').forEach(bullet => bullet.remove());
+                activeBullets = []; 
+
+                updateHealthDisplay();
+                msgDisplay.classList.remove('active');
+                
+                if (enemyAIInterval) clearInterval(enemyAIInterval);
+                enemyAIInterval = setInterval(enemyFire, levelConfig.enemyFireRate); 
+                
+                requestAnimationFrame(moveEnemy);
+                gameLoopId = requestAnimationFrame(updateGameLoop);
+            }
+
+            function updateGameLoop() {
+                if (!gameActive) {
+                    cancelAnimationFrame(gameLoopId);
+                    return; 
+                }
+                const maxLeft = gameContainer.clientWidth;
+                
+                activeBullets.forEach(bullet => {
+                    if (bullet.isExpired) return;
+
+                    bullet.x += bullet.speed * (bullet.type === 'player' ? 1 : -1);
+                    bullet.el.style.left = `${bullet.x}px`;
+                    
+                    if (bullet.x < -50 || bullet.x > maxLeft + 50) { 
+                        bullet.isExpired = true;
+                        return;
+                    }
+
+                    if (bullet.type === 'player') {
+                        if (checkCollision(bullet.el, enemyEl)) {
+                            handleHit('player');
+                            bullet.isExpired = true;
+                            return;
+                        }
+                    } else { 
+                        if (checkCollision(bullet.el, playerEl)) {
+                            handleHit('enemy');
+                            bullet.isExpired = true;
+                            return;
+                        }
+                    }
+                });
+
+                activeBullets = activeBullets.filter(bullet => {
+                    if (bullet.isExpired) {
+                        bullet.el.remove();
+                        return false; 
+                    }
+                    return true; 
+                });
+
+                gameLoopId = requestAnimationFrame(updateGameLoop);
+            }
+
+            function updateHealthDisplay() {
+                const levelConfig = LEVEL_CONFIG[CURRENT_LEVEL];
+                // Menggunakan fungsi getCharacterStats (akan mengambil stat Owner jika aktif)
+                const playerConfig = getCharacterStats(CURRENT_PLAYER_CHAR);
+                
+                if (typeof playerHP === 'undefined') playerHP = playerConfig.baseHP;
+                if (typeof enemyHP === 'undefined') enemyHP = levelConfig.enemyHP;
+
+
+                playerHealthBar.style.width = `${(playerHP / playerConfig.baseHP) * 100}%`; 
+                enemyHealthBar.style.width = `${(enemyHP / levelConfig.enemyHP) * 100}%`; 
+                
+                playerHpText.textContent = `${playerHP} HP`;
+                enemyHpText.textContent = `${enemyHP} HP`;
+            }
+
+            function checkGameOver() {
+                if (!gameActive) return;
+
+                if (playerHP <= 0 || enemyHP <= 0) {
+                    gameActive = false;
+                    clearInterval(enemyAIInterval);
+                    if (gameLoopId) cancelAnimationFrame(gameLoopId);
+                    
+                    setTimeout(() => {
+                         document.querySelectorAll('.bullet').forEach(bullet => bullet.remove());
+                         activeBullets = []; 
+                    }, 100); 
+
+                    if (playerHP <= 0) {
+                        showMessage("KAMU KALAH!", "Kamu dikalahkan oleh Lawan!"); 
+                    } else {
+                        showMessage("KAMU MENANG!", "Kamu berhasil<br>mengalahkan<br>Lawan!"); 
+                    }
+                }
+            }
+            
+            function showMessage(title, subtitle) {
+                let buttonHtml = `
+                    <button id="home-btn" class="action-btn">MENU</button>
+                    <button id="restart-btn" class="action-btn">MULAI LAGI</button>
+                `;
+
+                msgDisplay.innerHTML = `
+                    <h2>${title}</h2>
+                    <p>${subtitle}</p>
+                    <div id="action-buttons">
+                        ${buttonHtml}
+                    </div>
+                `; 
+                msgDisplay.classList.add('active'); 
+
+                document.getElementById('restart-btn').addEventListener('click', () => showScreen('game')); 
+                
+                document.getElementById('home-btn').addEventListener('click', () => {
+                    showScreen('home'); 
+                });
+            }
+            
+            function flashCharacter(element, duration = 300) {
+                element.style.filter = 'drop-shadow(0 0 10px #fff)'; 
+                
+                setTimeout(() => {
+                    element.style.filter = 'none'; 
+                }, duration);
+            }
+
+            function movePlayer(direction) {
+                if (!gameActive) return;
+                // Menggunakan fungsi getCharacterStats (akan mengambil stat Owner jika aktif)
+                const playerConfig = getCharacterStats(CURRENT_PLAYER_CHAR);
+                const PLAYER_SPEED = playerConfig.speed; 
+
+                const containerHeight = gameContainer.clientHeight;
+                const playerHeight = playerEl.clientHeight;
+                const boundary = containerHeight - playerHeight;
+                let newY = playerY + (direction === 'up' ? -PLAYER_SPEED : PLAYER_SPEED);
+                newY = Math.max(0, newY); 
+                newY = Math.min(boundary, newY); 
+                playerY = newY;
+                playerEl.style.top = `${playerY}px`;
+            }
+            
+            upBtn.addEventListener('click', () => movePlayer('up'));
+            downBtn.addEventListener('click', () => movePlayer('down'));
+
+            function createBullet(x, y, type) {
+                if (!gameActive) return;
+
+                const bulletEl = document.createElement('div');
+                bulletEl.classList.add('bullet');
+                
+                let speed = type === 'player' ? 10 : 7;
+                
+                if (type === 'player') {
+                    const playerConfig = CHARACTER_LIST[CURRENT_PLAYER_CHAR];
+                    bulletEl.textContent = playerConfig.bulletEmoji; 
+                    bulletEl.classList.add('player-fire'); 
+                } else {
+                    const enemyConfig = LEVEL_CONFIG[CURRENT_LEVEL]; 
+                    bulletEl.textContent = enemyConfig.bulletEmoji; 
+                    bulletEl.classList.add('enemy-fire'); 
+                    x -= 40; 
+                }
+                
+                bulletEl.style.left = `${x}px`;
+                bulletEl.style.top = `${y}px`;
+                gameContainer.appendChild(bulletEl);
+
+                activeBullets.push({
+                    el: bulletEl,
+                    x: x,
+                    y: y,
+                    type: type,
+                    speed: speed,
+                    isExpired: false
+                });
+            }
+            
+            fireBtn.addEventListener('click', () => {
+                if (!gameActive || !canFire) return; 
+                
+                // Menggunakan fungsi getCharacterStats (akan mengambil stat Owner jika aktif)
+                const playerConfig = getCharacterStats(CURRENT_PLAYER_CHAR);
+                const FIRE_COOLDOWN = playerConfig.fireRate; 
+                
+                canFire = false;
+                setTimeout(() => {
+                    canFire = true;
+                }, FIRE_COOLDOWN);
+
+                const playerRect = playerEl.getBoundingClientRect();
+                const containerRect = gameContainer.getBoundingClientRect();
+
+                const startX = playerRect.right - containerRect.left;
+                const startY = playerRect.top - containerRect.top + (playerRect.height / 2) - 15;
+
+                createBullet(startX, startY, 'player');
+            });
+
+            function checkCollision(bullet, target) {
+                const bulletRect = bullet.getBoundingClientRect();
+                const targetRect = target.getBoundingClientRect();
+                const containerRect = gameContainer.getBoundingClientRect();
+                
+                const bLeft = bulletRect.left - containerRect.left;
+                const bRight = bulletRect.right - containerRect.left;
+                const bTop = bulletRect.top - containerRect.top;
+                const bBottom = bulletRect.bottom - containerRect.top;
+                
+                const tLeft = targetRect.left - containerRect.left;
+                const tRight = targetRect.right - containerRect.left;
+                const tTop = targetRect.top - containerRect.top;
+                const tBottom = targetRect.bottom - containerRect.top;
+
+
+                return (
+                    bLeft < tRight &&
+                    bRight > tLeft &&
+                    bTop < tBottom && 
+                    bBottom > tTop
+                );
+            }
+
+            function handleHit(shooterType) {
+                const levelConfig = LEVEL_CONFIG[CURRENT_LEVEL];
+                // Menggunakan fungsi getCharacterStats (akan mengambil stat Owner jika aktif)
+                const playerConfig = getCharacterStats(CURRENT_PLAYER_CHAR);
+                
+                if (shooterType === 'player') {
+                    enemyHP -= playerConfig.damage; 
+                    enemyHP = Math.max(0, enemyHP); 
+                    flashCharacter(enemyEl);
+                } else {
+                    playerHP -= levelConfig.enemyDamage; 
+                    playerHP = Math.max(0, playerHP);
+                    flashCharacter(playerEl);
+                }
+                updateHealthDisplay();
+                checkGameOver();
+            }
+
+            function moveEnemy() {
+                if (!gameActive) return;
+
+                const config = LEVEL_CONFIG[CURRENT_LEVEL];
+                const AI_MOVE_SPEED = config.enemySpeed;
+
+                const containerHeight = gameContainer.clientHeight;
+                const enemyHeight = enemyEl.clientHeight;
+                const playerCenterY = playerY + (playerEl.clientHeight / 2);
+                const enemyCenterY = enemyY + (enemyEl.clientHeight / 2);
+                
+                
+                if (Math.abs(playerCenterY - enemyCenterY) > 5) {
+                    if (playerCenterY > enemyCenterY) {
+                        enemyY += AI_MOVE_SPEED;
+                    } else {
+                        enemyY -= AI_MOVE_SPEED;
+                    }
+                }
+
+                enemyY = Math.max(0, enemyY); 
+                enemyY = Math.min(containerHeight - enemyHeight, enemyY); 
+                enemyEl.style.top = `${enemyY}px`;
+                
+                requestAnimationFrame(moveEnemy);
+            }
+            
+            function enemyFire() {
+                if (!gameActive) return;
+
+                const enemyRect = enemyEl.getBoundingClientRect();
+                const containerRect = gameContainer.getBoundingClientRect();
+
+                const startX = enemyRect.left - containerRect.left;
+                const startY = enemyRect.top - containerRect.top + (enemyRect.height / 2) - 15;
+
+                createBullet(startX, startY, 'enemy');
+            }
+
+            // --- INICIALISASI AWAL ---
+            showScreen('initial'); 
+        });
+    </script>
+</body>
+</html>
